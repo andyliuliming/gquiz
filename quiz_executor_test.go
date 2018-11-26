@@ -2,6 +2,7 @@ package gquiz_test
 
 import (
 	"io/ioutil"
+	"os"
 
 	"github.com/andyliuliming/gquiz"
 	. "github.com/onsi/ginkgo"
@@ -45,7 +46,7 @@ var _ = Describe("QuizExecutor", func() {
 			It("should execute sucessfully", func() {
 				mockUI := NewMockUI(
 					[]string{
-						"", "", "",
+						"", "", "", "",
 						"1",
 						"1",
 						"1",
@@ -67,7 +68,7 @@ var _ = Describe("QuizExecutor", func() {
 
 				mockUI := NewMockUI(
 					[]string{
-						"", "", "",
+						"", "", "", "",
 						"1",
 						"1",
 						"1",
@@ -78,6 +79,27 @@ var _ = Describe("QuizExecutor", func() {
 				qResult, err := quizExecutor.Execute(&qGraph)
 				Expect(err).To(BeNil())
 				Expect((*qResult)["admin_name"]).To(Equal("kluser2"))
+				Expect(qResult).NotTo(BeNil())
+			})
+		})
+
+		Context("When the environment is set.", func() {
+			It("value in env should been used.", func() {
+				iaas := "other_iaas"
+				os.Setenv("KL_IAAS", iaas)
+				mockUI := NewMockUI(
+					[]string{
+						"", "", "", "",
+						"1",
+						"1",
+						"1",
+						"",
+					},
+				)
+				quizExecutor := gquiz.NewQuizExecutor(mockUI, nil)
+				qResult, err := quizExecutor.Execute(&qGraph)
+				Expect(err).To(BeNil())
+				Expect((*qResult)["iaas"]).To(Equal(iaas))
 				Expect(qResult).NotTo(BeNil())
 			})
 		})

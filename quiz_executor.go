@@ -3,6 +3,7 @@ package gquiz
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/Knetic/govaluate"
@@ -100,7 +101,10 @@ func (qe *QuizExecutor) HandleQuestion(q *Question) (string, error) {
 	var defaultValue string
 	if (*qe.qResult)[q.VarName] != "" {
 		defaultValue = (*qe.qResult)[q.VarName]
-	} else {
+	} else if q.DefaultEnv != "" {
+		defaultValue = os.Getenv(q.DefaultEnv)
+	}
+	if defaultValue == "" {
 		defaultValue = q.Default
 	}
 	if defaultValue != "" {
