@@ -96,8 +96,10 @@ func (qe *QuizExecutor) HandleNode(qNode *QNode) (string, error) {
 }
 
 func (qe *QuizExecutor) HandleQuestion(q *Question) (string, error) {
+	if q.ConstantValue != "" {
+		return q.ConstantValue, nil
+	}
 	var answer string
-	// use the values in the old vars as the default value.
 	var defaultValue string
 	if qe.qResult[q.VarName] != "" {
 		defaultValue = qe.qResult[q.VarName]

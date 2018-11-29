@@ -108,6 +108,24 @@ var _ = Describe("QuizExecutor", func() {
 			})
 		})
 
+		Context("When constant value set", func() {
+			It("constant value should be used", func() {
+				mockUI := NewMockUI(
+					[]string{
+						"", "", "", "",
+						"1",
+						"1",
+						"1",
+					},
+				)
+				quizExecutor := gquiz.NewQuizExecutor(mockUI, nil)
+				qResult, err := quizExecutor.Execute(&qGraph)
+				Expect(err).To(BeNil())
+				Expect(qResult["final_artifact"]).To(Equal("small_kubernetes.yml"))
+				Expect(qResult).NotTo(BeNil())
+			})
+		})
+
 		Context("When the environment is set.", func() {
 			It("value in env should been used.", func() {
 				iaas := "other_iaas"
