@@ -11,12 +11,12 @@ import (
 
 type QuizExecutor struct {
 	ui      UI
-	qResult *QResult
+	qResult QResult
 }
 
-func NewQuizExecutor(ui UI, qr *QResult) *QuizExecutor {
+func NewQuizExecutor(ui UI, qr QResult) *QuizExecutor {
 	if qr == nil {
-		qr = &QResult{}
+		qr = QResult{}
 	}
 	return &QuizExecutor{
 		ui:      ui,
@@ -24,10 +24,10 @@ func NewQuizExecutor(ui UI, qr *QResult) *QuizExecutor {
 	}
 }
 
-func (qe *QuizExecutor) Execute(qGraph *QGraph) (*QResult, error) {
+func (qe *QuizExecutor) Execute(qGraph *QGraph) (QResult, error) {
 	root := qGraph.FindRootNode()
 	if root == nil {
-		return nil, errors.New("no root node found")
+		return QResult{}, errors.New("no root node found")
 	}
 
 	var currentNode *QNode
@@ -36,7 +36,7 @@ func (qe *QuizExecutor) Execute(qGraph *QGraph) (*QResult, error) {
 		nextNodeName, err := qe.HandleNode(currentNode)
 
 		if err != nil {
-			return nil, err
+			return QResult{}, err
 		}
 		if nextNodeName != "" {
 			currentNode = qGraph.FindNode(nextNodeName)
@@ -71,7 +71,7 @@ func (qe *QuizExecutor) HandleNode(qNode *QNode) (string, error) {
 			currentVars[q.VarName] = answer
 		}
 		if q.Persistent {
-			(*qe.qResult)[q.VarName] = answer
+			qe.qResult[q.VarName] = answer
 		}
 	}
 
@@ -99,8 +99,8 @@ func (qe *QuizExecutor) HandleQuestion(q *Question) (string, error) {
 	var answer string
 	// use the values in the old vars as the default value.
 	var defaultValue string
-	if (*qe.qResult)[q.VarName] != "" {
-		defaultValue = (*qe.qResult)[q.VarName]
+	if qe.qResult[q.VarName] != "" {
+		defaultValue = qe.qResult[q.VarName]
 	} else if q.DefaultEnv != "" {
 		defaultValue = os.Getenv(q.DefaultEnv)
 	}
@@ -118,17 +118,31 @@ func (qe *QuizExecutor) HandleQuestion(q *Question) (string, error) {
 				qe.ui.Println(fmt.Sprintf("%d.%s -- %s", (i + 1), q.Candidates[i].Value, q.Candidates[i].Description))
 			}
 			input := qe.ui.GetInput()
-			choice, err := strconv.Atoi(input)
-			if err != nil {
-				qe.ui.Println("Please make the choice, 1,2...")
-				continue
+			gotAnswer := false
+			if input == "" {
+				for i := range q.Candidates {
+					if defaultValue == q.Candidates[i].Value {
+						answer = defaultValue
+						gotAnswer = true
+						break
+					}
+				}
 			}
-			if choice < 1 || choice > len(q.Candidates) {
-				qe.ui.Println("choice out of range.")
-				continue
+			if gotAnswer {
+				break
+			} else {
+				choice, err := strconv.Atoi(input)
+				if err != nil {
+					qe.ui.Println("Please make the choice, 1,2...")
+					continue
+				}
+				if choice < 1 || choice > len(q.Candidates) {
+					qe.ui.Println("choice out of range.")
+					continue
+				}
+				answer = q.Candidates[choice-1].Value
+				break
 			}
-			answer = q.Candidates[choice-1].Value
-			break
 		}
 	}
 	if answer == "" {

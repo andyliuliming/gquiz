@@ -42,6 +42,7 @@ var _ = Describe("QuizExecutor", func() {
 			qGraph, err = quizBuilder.BuildQGraph(content)
 			Expect(err).To(BeNil())
 		})
+
 		Context("Everything OK", func() {
 			It("should execute sucessfully", func() {
 				mockUI := NewMockUI(
@@ -56,7 +57,7 @@ var _ = Describe("QuizExecutor", func() {
 				quizExecutor := gquiz.NewQuizExecutor(mockUI, nil)
 				qResult, err := quizExecutor.Execute(&qGraph)
 				Expect(err).To(BeNil())
-				Expect((*qResult)["admin_name"]).To(Equal("kluser"))
+				Expect(qResult["admin_name"]).To(Equal("kluser"))
 				Expect(qResult).NotTo(BeNil())
 			})
 		})
@@ -64,7 +65,7 @@ var _ = Describe("QuizExecutor", func() {
 		Context("When have old values.", func() {
 			It("old values should been used.", func() {
 				adminName := "kluser2"
-				qr := &gquiz.QResult{"admin_name": adminName}
+				qr := gquiz.QResult{"admin_name": adminName}
 
 				mockUI := NewMockUI(
 					[]string{
@@ -78,7 +79,31 @@ var _ = Describe("QuizExecutor", func() {
 				quizExecutor := gquiz.NewQuizExecutor(mockUI, qr)
 				qResult, err := quizExecutor.Execute(&qGraph)
 				Expect(err).To(BeNil())
-				Expect((*qResult)["admin_name"]).To(Equal("kluser2"))
+				Expect(qResult["admin_name"]).To(Equal("kluser2"))
+				Expect(qResult).NotTo(BeNil())
+			})
+		})
+
+		Context("When have default value for choice.", func() {
+			It("default value for choice should been used.", func() {
+				adminName := "kluser2"
+				qr := gquiz.QResult{"admin_name": adminName}
+				repoAddress := "github.com/Microsoft/kunlun"
+				mockUI := NewMockUI(
+					[]string{
+						"", "", "", "", "",
+						repoAddress,
+						"",
+						"1",
+						"20",
+						"",
+						"",
+					},
+				)
+				quizExecutor := gquiz.NewQuizExecutor(mockUI, qr)
+				qResult, err := quizExecutor.Execute(&qGraph)
+				Expect(err).To(BeNil())
+				Expect(qResult["project_source_code_path"]).To(Equal(repoAddress))
 				Expect(qResult).NotTo(BeNil())
 			})
 		})
@@ -99,7 +124,7 @@ var _ = Describe("QuizExecutor", func() {
 				quizExecutor := gquiz.NewQuizExecutor(mockUI, nil)
 				qResult, err := quizExecutor.Execute(&qGraph)
 				Expect(err).To(BeNil())
-				Expect((*qResult)["iaas"]).To(Equal(iaas))
+				Expect(qResult["iaas"]).To(Equal(iaas))
 				Expect(qResult).NotTo(BeNil())
 			})
 		})
