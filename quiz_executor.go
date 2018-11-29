@@ -108,7 +108,7 @@ func (qe *QuizExecutor) HandleQuestion(q *Question) (string, error) {
 		defaultValue = q.Default
 	}
 	if defaultValue != "" {
-		qe.ui.Println(fmt.Sprintf("%s(%s)", q.Description, defaultValue))
+		qe.ui.Println(fmt.Sprintf("%s (%s)", q.Description, defaultValue))
 	} else {
 		qe.ui.Println(q.Description)
 	}
