@@ -97,6 +97,7 @@ func (qe *QuizExecutor) HandleNode(qNode *QNode) (string, error) {
 
 func (qe *QuizExecutor) HandleQuestion(q *Question) (string, error) {
 	if q.ConstantValue != "" {
+		qe.ui.Println(fmt.Sprintf("%s (%s)", q.Description, q.ConstantValue))
 		return q.ConstantValue, nil
 	}
 	var answer string
